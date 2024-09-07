@@ -1,12 +1,25 @@
-struct Vector<T,const SIZE : usize> {
+struct Vector<T, const SIZE : usize> {
     elements : [T; SIZE]
 }
 
 impl<T: Copy, const SIZE : usize> Copy for Vector<T, SIZE> {}
 
-impl<T: Clone, const SIZE : usize> Clone for Vector<T, SIZE> {
+impl<T, const SIZE : usize> Clone for Vector<T, SIZE>
+where T: Clone {
     fn clone(&self) -> Self {
         Self{elements : self.elements.clone()}
+    }
+}
+
+impl<T, const SIZE : usize> std::ops::Index<usize> for Vector<T, SIZE> {
+    type Output = T;
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.elements[index]
+    }
+}
+impl<T, const SIZE : usize> std::ops::IndexMut<usize> for Vector<T, SIZE> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output{
+        &mut self.elements[index]
     }
 }
 
@@ -25,15 +38,18 @@ impl<T: std::fmt::Display, const SIZE : usize> std::fmt::Display for Vector<T, S
     }
 }
 
-impl<T, const SIZE : usize> std::ops::Add for Vector<T, SIZE>
-where for<'a> &'a T: std::ops::Add<&'a T, Output=T>{
+impl<T: std::ops::Add<Output = T>, const SIZE : usize> std::ops::Add for Vector<T, SIZE>
+where for<'a> &'a T: std::ops::Add<Output = T> {
     type Output = Self;
     fn add(self, rhs: Self) -> Self::Output {
-        let mut output: Vector<T, SIZE> = self;
-        for index in 0..SIZE {
-            output.elements[index] = &output.elements[index] + &rhs.elements[index]
+        Self{
+            elements:
+                std::array::from_fn(
+                    |index| {
+                        &self[index] + &rhs[index]
+                    }
+                )
         }
-        output
     }
 }
 
