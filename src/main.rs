@@ -2,6 +2,14 @@ struct Vector<T, const SIZE : usize> {
     elements : [T; SIZE]
 }
 
+impl<T, const SIZE: usize> Vector<T, SIZE> {
+    fn from_fn<F: std::ops::FnMut(usize) -> T>(f: F) -> Self {
+        Self{
+            elements: std::array::from_fn(f)
+        }
+    }
+}
+
 impl<T: Copy, const SIZE : usize> Copy for Vector<T, SIZE> {}
 
 impl<T, const SIZE : usize> Clone for Vector<T, SIZE>
@@ -42,14 +50,11 @@ impl<T: std::ops::Add<Output = T>, const SIZE : usize> std::ops::Add for Vector<
 where for<'a> &'a T: std::ops::Add<Output = T> {
     type Output = Self;
     fn add(self, rhs: Self) -> Self::Output {
-        Self{
-            elements:
-                std::array::from_fn(
-                    |index| {
-                        &self[index] + &rhs[index]
-                    }
-                )
-        }
+        Self::from_fn(
+            |index| {
+                &self[index] + &rhs[index]
+            }
+        )
     }
 }
 
